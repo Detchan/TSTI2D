@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Développeur Web & Cybersécurité</title>
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" />
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Leaflet MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>Développeur Web & Cybersécurité</h1>
+      <nav>
+        <nav class="navbar">
+  <button class="nav-toggle" id="navToggle">☰</button>
+
+  <ul class="nav-links" id="navMenu">
+    <li><a href="#intro">Intro</a></li>
+    <li><a href="#formations">Formations</a></li>
+    <li><a href="#carte">Carte</a></li>
+    <li><a href="#quiz">Quiz</a></li>
+    <li><a href="#jeu">Mini-jeu</a></li>
+  </ul>
+</nav>
+      <button class="install hidden">Installer l'application</button>
+    </div>
+  </header>
+
+  <!-- Sections placeholder -->
+  <main class="container">
+    <section id="intro" class="card">
+      <h2>Objectif</h2>
+      <p>Présenter le travail de développeur web et de cyber-sécurité.</p>
+    </section>
+
+   <section id="formations" class="card">
+  <h2>Formations (post-bac)</h2>
+
+  <div class="table-controls">
+    <label>Filtrer : 
+      <select id="levelFilter">
+        <option value="all">Tous</option>
+        <option value="bac+2">Bac+2</option>
+        <option value="bac+3">Bac+3</option>
+        <option value="bac+5">Bac+5</option>
+      </select>
+    </label>
+
+    <label>Rechercher : 
+      <input id="formationSearch" placeholder="Ex : BTS, Licence, EPITA..." />
+    </label>
+
+    <button id="exportCsv">Exporter CSV</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="formationsTable" class="nice-table">
+      <thead>
+        <tr>
+          <th>Niveau</th>
+          <th>Intitulé</th>
+          <th>Durée indicative</th>
+          <th>Remarques / Exemples d'établissements</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+
+    <section id="carte" class="card">
+      <h2>Carte interactive — Établissements en France</h2>
+      <div class="map-wrap">
+        <div id="map"></div>
+      </div>
+    </section>
+
+    <section id="quiz" class="card">
+      <h2>Quiz</h2>
+      <div id="quiz-container"></div>
+    </section>
+
+    <section id="jeu" class="card">
+      <h2>Mini-jeu — Classe-les !</h2>
+      <div class="game-area">
+        <div class="draggables"></div>
+        <div class="targets"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Script -->
+  <script defer src="script.js"></script>
+</body>
+</html>
