@@ -1,7 +1,10 @@
 /* --------------------------------------------------
 📍 DONNÉES DES ÉTABLISSEMENTS
 -------------------------------------------------- */
-  const places = [
+  /* --------------------------------------------------
+📍 DONNÉES DES ÉTABLISSEMENTS
+-------------------------------------------------- */
+const places = [
   {id:1, name:"42 Le Havre", lat:49.4944, lon:0.1079, type:"dev", level:"bac+3", url:"https://www.42lehavre.fr"},
   {id:2, name:"IUT Le Havre – Informatique", lat:49.5048, lon:0.1127, type:"dev", level:"bac+3", url:"https://iut-lehavre.univ-lehavre.fr"},
   {id:3, name:"Université du Havre – Master Sécurité SI", lat:49.4944, lon:0.1079, type:"cyber", level:"bac+5", url:"https://www.univ-lehavre.fr"},
@@ -53,140 +56,141 @@ const clusterGroup = L.markerClusterGroup();
 map.addLayer(clusterGroup);
 
 function getIcon(type) {
-if (type === "dev") return iconDev;
-if (type === "cyber") return iconCyber;
-return iconMixed;
+  if (type === "dev") return iconDev;
+  if (type === "cyber") return iconCyber;
+  return iconMixed;
 }
 
+/* --------------------------------------------------
+🔍 AJOUT DES MARQUEURS AVEC DOUBLE FILTRE
+-------------------------------------------------- */
 function addMarkers(typeFilter = "all", search = "", levelFilter = "all") {
-clusterGroup.clearLayers();
+  clusterGroup.clearLayers();
 
-const query = search.trim().toLowerCase();
+  const query = search.trim().toLowerCase();
 
-places.forEach(p => {
-if (typeFilter !== "all" && p.type !== typeFilter) return;
-if (levelFilter !== "all" && p.level !== levelFilter) return;
-if (query && !p.name.toLowerCase().includes(query)) return;
+  places.forEach(p => {
+    if (typeFilter !== "all" && p.type !== typeFilter) return;
+    if (levelFilter !== "all" && p.level !== levelFilter) return;
+    if (query && !p.name.toLowerCase().includes(query)) return;
 
-const marker = L.marker([p.lat, p.lon], { icon: getIcon(p.type) });
+    const marker = L.marker([p.lat, p.lon], { icon: getIcon(p.type) });
 
-marker.bindPopup(`
-<strong>${p.name}</strong><br>
-Niveau : ${p.level.toUpperCase()}<br>
-<a href="${p.url}" target="_blank">Voir le site</a>
-`);
+    marker.bindPopup(`
+      <strong>${p.name}</strong><br>
+      Matière : ${p.type === "dev" ? "Développement" : "Cybersécurité"}<br>
+      Niveau : ${p.level.toUpperCase()}<br>
+      <a href="${p.url}" target="_blank">Voir le site</a>
+    `);
 
-clusterGroup.addLayer(marker);
-});
+    clusterGroup.addLayer(marker);
+  });
 }
 
 addMarkers();
 
 /* --------------------------------------------------
-🔗 LIEN TABLEAU ↔ CARTE
+📍 LIEN TABLEAU ↔ CARTE
 -------------------------------------------------- */
-function updateMapByLevel(level) {
-addMarkers("all", "", level);
+function updateMapByFilters() {
+  const level = document.getElementById("mapLevelFilter").value;
+  const subject = document.getElementById("mapSubjectFilter").value;
+  addMarkers(subject, "", level);
 }
 
-/* -----------------------------
-   TABLE FORMATIONS
-   ----------------------------- */
+/* évènements filtres carte */
+document.getElementById("mapLevelFilter").addEventListener("change", updateMapByFilters);
+document.getElementById("mapSubjectFilter").addEventListener("change", updateMapByFilters);
 
-// données : formation / niveau / durée / remarques
+
+/* --------------------------------------------------
+📘 TABLEAU FORMATIONS
+-------------------------------------------------- */
+
 const formationsTableData = [
   // Bac+2
-  {level:"Bac+2", key:"bac+2", title:"BTS SIO – SLAM (Développement)", duration:"2 ans", note:"BTS SIO (SLAM) — exemple en lycées / CFA"},
-  {level:"Bac+2", key:"bac+2", title:"BTS SIO – SISR (Réseaux & Sécurité)", duration:"2 ans", note:"Orientation réseaux/sécurité"},
+  {level:"Bac+2", key:"bac+2", subject:"dev", title:"BTS SIO – SLAM (Développement)", duration:"2 ans", note:"BTS SIO (SLAM) — exemple en lycées / CFA"},
+  {level:"Bac+2", key:"bac+2", subject:"cyber", title:"BTS SIO – SISR (Réseaux & Sécurité)", duration:"2 ans", note:"Orientation réseaux/sécurité"},
 
   // Bac+3
-  {level:"Bac+3", key:"bac+3", title:"BUT Informatique", duration:"3 ans", note:"IUT / BUT (ex-DUT)"},
-  {level:"Bac+3", key:"bac+3", title:"Licence Informatique", duration:"3 ans", note:"Université (parcours général ou cyber)"},
-  {level:"Bac+3", key:"bac+3", title:"Licence Professionnelle Développement Web", duration:"1 an (après bac+2)", note:"Licence pro spécialisée"},
-  {level:"Bac+3", key:"bac+3", title:"Licence Professionnelle Cybersécurité / Cyberdéfense", duration:"1 an (après bac+2)", note:"Licence pro spécialisée"},
-  {level:"Bac+3", key:"bac+3", title:"Bachelor Développeur Web / Full-Stack", duration:"3 ans", note:"Ecoles / privés (Le Reacteur, Holberton...)"},
-  {level:"Bac+3", key:"bac+3", title:"Titre RNCP Développeur Web / Web Mobile", duration:"variable (1-3 ans)", note:"Certifications professionnelles"},
+  {level:"Bac+3", key:"bac+3", subject:"dev", title:"BUT Informatique", duration:"3 ans", note:"IUT / BUT (ex-DUT)"},
+  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Licence Informatique", duration:"3 ans", note:"Université (parcours général ou cyber)"},
+  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Licence Professionnelle Dév Web", duration:"1 an", note:"Licence pro spécialisée"},
+  {level:"Bac+3", key:"bac+3", subject:"cyber", title:"Licence Professionnelle Cybersécurité", duration:"1 an", note:"Licence pro spécialisée"},
+  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Bachelor Dév Web / Full-Stack", duration:"3 ans", note:"Écoles / privés"},
+  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Titre RNCP Dév Web / Web Mobile", duration:"variable", note:"Certifications professionnelles"},
 
   // Bac+5
-  {level:"Bac+5", key:"bac+5", title:"Cycle ingénieur Informatique (EX : CESI, ESIGELEC)", duration:"5 ans (incl. prépa)", note:"Écoles d'ingénieurs"},
-  {level:"Bac+5", key:"bac+5", title:"Master Cybersécurité (Université / ENSICAEN / EPITA)", duration:"2 ans après licence", note:"Master spécialisé ou école d’ingénieur"},
-  {level:"Bac+5", key:"bac+5", title:"Cycle ingénieur Cybersécurité (EPITA / ENSICAEN / ESIGELEC)", duration:"5 ans", note:"Parcours ingénieur spécialisé"},
-  {level:"Bac+5", key:"bac+5", title:"Bachelor → Master (parcours long)", duration:"Bac+5 total", note:"Possibilité d'intégrer en licence puis master"}
+  {level:"Bac+5", key:"bac+5", subject:"dev", title:"Cycle ingénieur Informatique", duration:"5 ans", note:"Écoles d'ingénieurs"},
+  {level:"Bac+5", key:"bac+5", subject:"cyber", title:"Master Cybersécurité", duration:"2 ans", note:"Université / écoles d’ingénieurs"},
+  {level:"Bac+5", key:"bac+5", subject:"cyber", title:"Cycle ingénieur Cybersécurité", duration:"5 ans", note:"Spécialisé cyber"},
+  {level:"Bac+5", key:"bac+5", subject:"dev", title:"Parcours long Bachelor → Master", duration:"Bac+5", note:"Formation complète"}
 ];
 
-// DOM refs
 const tbody = document.querySelector("#formationsTable tbody");
 const levelFilter = document.getElementById("levelFilter");
+const subjectFilter = document.getElementById("subjectFilter");
 const searchInput = document.getElementById("formationSearch");
 const exportBtn = document.getElementById("exportCsv");
 
-// helper : badge class from key
-function badgeFor(key){
+/* BADGES */
+function badgeLevel(key){
   if(key === "bac+2") return `<span class="badge bac2">Bac+2</span>`;
   if(key === "bac+3") return `<span class="badge bac3">Bac+3</span>`;
   return `<span class="badge bac5">Bac+5</span>`;
 }
 
-// render table rows (filtered)
-function renderFormations(filter = "all", q = ""){
-  tbody.innerHTML = "";
-  const qtxt = q.trim().toLowerCase();
+function badgeSubject(s){
+  return s === "dev"
+    ? `<span class="badge dev">Dev</span>`
+    : `<span class="badge cyber">Cyber</span>`;
+}
 
-  // tri : ordre croissant (Bac+2, Bac+3, Bac+5) — on a déjà la liste organisée,
-  // mais on applique un stable filter to keep order
+/* RENDER TABLEAU */
+function renderFormations(){
+  tbody.innerHTML = "";
+  const lvl = levelFilter.value;
+  const subj = subjectFilter.value;
+  const q = searchInput.value.trim().toLowerCase();
+
   formationsTableData.forEach(row => {
-    if(filter !== "all" && row.key !== filter) return;
-    if(qtxt && !(row.title.toLowerCase().includes(qtxt) || row.note.toLowerCase().includes(qtxt))) return;
+    if (lvl !== "all" && row.key !== lvl) return;
+    if (subj !== "all" && row.subject !== subj) return;
+    if (q && !row.title.toLowerCase().includes(q) && !row.note.toLowerCase().includes(q)) return;
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${badgeFor(row.key)}</td>
+      <td>${badgeLevel(row.key)}</td>
       <td>${row.title}</td>
       <td>${row.duration}</td>
+      <td>${badgeSubject(row.subject)}</td>
       <td>${row.note}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// CSV export
-function exportToCsv(filename = "formations.csv"){
-  const rows = [["Niveau","Intitulé","Durée indicative","Remarques"]];
-  const q = levelFilter.value;
-  const search = searchInput.value;
+/* EXPORT CSV */
+function exportToCsv(filename="formations.csv"){
+  const rows = [["Niveau","Intitulé","Durée","Matière","Remarques"]];
   formationsTableData.forEach(r => {
-    if(q !== "all" && r.key !== q) return;
-    if(search && !(r.title.toLowerCase().includes(search.toLowerCase()) || r.note.toLowerCase().includes(search.toLowerCase()))) return;
-    rows.push([r.level, r.title, r.duration, r.note]);
+    rows.push([r.level, r.title, r.duration, r.subject, r.note]);
   });
-  const csvContent = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const csv = rows.map(r => r.join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = filename;
-  link.style.display = "none";
-  document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
 }
 
-// events
-levelFilter.addEventListener("change", ()=> renderFormations(levelFilter.value, searchInput.value));
-searchInput.addEventListener("input", ()=> renderFormations(levelFilter.value, searchInput.value));
-exportBtn.addEventListener("click", ()=> exportToCsv());
+/* EVENTS TABLEAU */
+levelFilter.addEventListener("change", renderFormations);
+subjectFilter.addEventListener("change", renderFormations);
+searchInput.addEventListener("input", renderFormations);
+exportBtn.addEventListener("click", exportToCsv);
 
-// initial render (Bac+2 -> Bac+3 -> Bac+5 order preserved by array)
 renderFormations();
-// --- LIEN ENTRE TABLEAU ET CARTE --- //
-levelFilter.addEventListener("change", () => {
-    const selected = levelFilter.value;
-    updateMapByLevel(selected);
-});
-
-// --- Mise à jour de la carte selon le niveau --- //
-function updateMapByLevel(level) {
-    addMarkers("all", "", level);
-}
 
 /***************************
  *   QUIZ
@@ -416,4 +420,5 @@ window.addEventListener("beforeinstallprompt", e => {
 installBtn.addEventListener("click", async () => {
   deferredPrompt.prompt();
   installBtn.classList.add("hidden");
+
 });
