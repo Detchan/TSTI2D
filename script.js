@@ -1,9 +1,6 @@
 /* --------------------------------------------------
 📍 DONNÉES DES ÉTABLISSEMENTS
 -------------------------------------------------- */
-  /* --------------------------------------------------
-📍 DONNÉES DES ÉTABLISSEMENTS
--------------------------------------------------- */
 const places = [
   {id:1, name:"42 Le Havre", lat:49.4944, lon:0.1079, type:"dev", level:"bac+3", url:"https://www.42lehavre.fr"},
   {id:2, name:"IUT Le Havre – Informatique", lat:49.5048, lon:0.1127, type:"dev", level:"bac+3", url:"https://iut-lehavre.univ-lehavre.fr"},
@@ -93,9 +90,8 @@ function addMarkers(subject = "all", search = "", level = "all") {
 function updateMapByFilters() {
   const level = document.getElementById("mapLevelFilter").value;
   const subject = document.getElementById("mapSubjectFilter").value;
-  const search = document.getElementById("formationSearch").value; // si tu veux synchroniser la recherche aussi
 
-  addMarkers(subject, search, level);
+  addMarkers(subject, "", level);
 }
 
 /* évènements filtres carte */
@@ -421,4 +417,3 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 
 });
-
