@@ -98,95 +98,170 @@ function updateMapByFilters() {
 document.getElementById("mapLevelFilter").addEventListener("change", updateMapByFilters);
 document.getElementById("mapSubjectFilter").addEventListener("change", updateMapByFilters);
 
-/* --------------------------------------------------
-📘 TABLEAU FORMATIONS
--------------------------------------------------- */
+/* ===========================
+   Données formations
+=========================== */
 
-const formationsTableData = [
-  // Bac+2
-  {level:"Bac+2", key:"bac+2", subject:"dev", title:"BTS SIO – SLAM (Développement)", duration:"2 ans", note:"BTS SIO (SLAM) — exemple en lycées / CFA"},
-  {level:"Bac+2", key:"bac+2", subject:"cyber", title:"BTS SIO – SISR (Réseaux & Sécurité)", duration:"2 ans", note:"Orientation réseaux/sécurité"},
-
-  // Bac+3
-  {level:"Bac+3", key:"bac+3", subject:"dev", title:"BUT Informatique", duration:"3 ans", note:"IUT / BUT (ex-DUT)"},
-  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Licence Informatique", duration:"3 ans", note:"Université (parcours général ou cyber)"},
-  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Licence Professionnelle Dév Web", duration:"1 an", note:"Licence pro spécialisée"},
-  {level:"Bac+3", key:"bac+3", subject:"cyber", title:"Licence Professionnelle Cybersécurité", duration:"1 an", note:"Licence pro spécialisée"},
-  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Bachelor Dév Web / Full-Stack", duration:"3 ans", note:"Écoles / privés"},
-  {level:"Bac+3", key:"bac+3", subject:"dev", title:"Titre RNCP Dév Web / Web Mobile", duration:"variable", note:"Certifications professionnelles"},
-
-  // Bac+5
-  {level:"Bac+5", key:"bac+5", subject:"dev", title:"Cycle ingénieur Informatique", duration:"5 ans", note:"Écoles d'ingénieurs"},
-  {level:"Bac+5", key:"bac+5", subject:"cyber", title:"Master Cybersécurité", duration:"2 ans", note:"Université / écoles d’ingénieurs"},
-  {level:"Bac+5", key:"bac+5", subject:"cyber", title:"Cycle ingénieur Cybersécurité", duration:"5 ans", note:"Spécialisé cyber"},
-  {level:"Bac+5", key:"bac+5", subject:"dev", title:"Parcours long Bachelor → Master", duration:"Bac+5", note:"Formation complète"}
+const formations = [
+  {
+    level: "bac+3",
+    title: "BUT Informatique",
+    duration: "3 ans",
+    subject: "dev",
+    note: "IUT / BUT (ex-DUT)"
+  },
+  {
+    level: "bac+3",
+    title: "Licence Informatique",
+    duration: "3 ans",
+    subject: "dev",
+    note: "Université (parcours général ou cyber)"
+  },
+  {
+    level: "bac+3",
+    title: "Licence Professionnelle Dév Web",
+    duration: "1 an",
+    subject: "dev",
+    note: "Licence pro spécialisée"
+  },
+  {
+    level: "bac+3",
+    title: "Licence Professionnelle Cybersécurité",
+    duration: "1 an",
+    subject: "cyber",
+    note: "Licence pro spécialisée"
+  },
+  {
+    level: "bac+3",
+    title: "Bachelor Dév Web / Full-Stack",
+    duration: "3 ans",
+    subject: "dev",
+    note: "Écoles / privés"
+  },
+  {
+    level: "bac+3",
+    title: "Titre RNCP Dév Web / Web Mobile",
+    duration: "variable",
+    subject: "dev",
+    note: "Certifications professionnelles"
+  }
 ];
 
-const tbody = document.querySelector("#formationsTable tbody");
-const levelFilter = document.getElementById("levelFilter");
-const subjectFilter = document.getElementById("subjectFilter");
-const searchInput = document.getElementById("formationSearch");
-const exportBtn = document.getElementById("exportCsv");
+/* ===========================
+   Badges
+=========================== */
 
-/* BADGES */
-function badgeLevel(key){
-  if(key === "bac+2") return `<span class="badge bac2">Bac+2</span>`;
-  if(key === "bac+3") return `<span class="badge bac3">Bac+3</span>`;
-  return `<span class="badge bac5">Bac+5</span>`;
+function badgeLevel(level) {
+  return `<span class="badge ${level.replace("+","")}">${level.toUpperCase()}</span>`;
 }
 
-function badgeSubject(s){
-  return s === "dev"
-    ? `<span class="badge dev">Dev</span>`
-    : `<span class="badge cyber">Cyber</span>`;
+function badgeSubject(sub) {
+  return `<span class="badge ${sub}">${
+    sub === "dev" ? "Développement" : "Cybersécurité"
+  }</span>`;
 }
 
-/* RENDER TABLEAU */
-function renderFormations(){
+/* ===========================
+   Tableau Formations
+=========================== */
+
+function loadTable() {
+  const tbody = document.querySelector("#formationsTable tbody");
   tbody.innerHTML = "";
-  const lvl = levelFilter.value;
-  const subj = subjectFilter.value;
-  const q = searchInput.value.trim().toLowerCase();
 
-  formationsTableData.forEach(row => {
-    if (lvl !== "all" && row.key !== lvl) return;
-    if (subj !== "all" && row.subject !== subj) return;
-    if (q && !row.title.toLowerCase().includes(q) && !row.note.toLowerCase().includes(q)) return;
+  const levelFilter = document.getElementById("levelFilter").value;
+  const subjectFilter = document.getElementById("subjectFilter").value;
+  const search = document.getElementById("formationSearch").value.toLowerCase();
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${badgeLevel(row.key)}</td>
-      <td>${row.title}</td>
-      <td>${row.duration}</td>
-      <td>${badgeSubject(row.subject)}</td>
-      <td>${row.note}</td>
-    `;
-    tbody.appendChild(tr);
-  });
+  formations
+    .filter(f => levelFilter === "all" || f.level === levelFilter)
+    .filter(f => subjectFilter === "all" || f.subject === subjectFilter)
+    .filter(f => f.title.toLowerCase().includes(search))
+    .forEach(row => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${badgeLevel(row.level)}</td>
+          <td>${row.title}</td>
+          <td>${row.duration}</td>
+          <td>${badgeSubject(row.subject)}</td>
+          <td>${row.note}</td>
+        </tr>
+      `;
+    });
 }
 
-/* EXPORT CSV */
-function exportToCsv(filename="formations.csv"){
-  const rows = [["Niveau","Intitulé","Durée","Matière","Remarques"]];
-  formationsTableData.forEach(r => {
-    rows.push([r.level, r.title, r.duration, r.subject, r.note]);
-  });
-  const csv = rows.map(r => r.join(",")).join("\n");
-  const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+// Événements
+document.getElementById("levelFilter").addEventListener("change", loadTable);
+document.getElementById("subjectFilter").addEventListener("change", loadTable);
+document.getElementById("formationSearch").addEventListener("input", loadTable);
+
+// Charger au démarrage
+loadTable();
+
+/* ===========================
+   Export CSV
+=========================== */
+
+document.getElementById("exportCsv").addEventListener("click", () => {
+  let csv = "Niveau;Intitulé;Durée;Matière;Remarques\n";
+
+  document
+    .querySelectorAll("#formationsTable tbody tr")
+    .forEach(row => {
+      const cols = [...row.querySelectorAll("td")].map(td => td.innerText.replace(/\n/g, " "));
+      csv += cols.join(";") + "\n";
+    });
+
+  const blob = new Blob([csv], { type: "text/csv" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = filename;
+  link.download = "formations.csv";
   link.click();
+});
+
+/* ===========================
+   Carte Leaflet + Markers
+=========================== */
+
+const schools = [
+  { name: "IUT Informatique Paris", lat: 48.846, lon: 2.355, level: "bac+3", subject: "dev" },
+  { name: "Université Cyber Rennes", lat: 48.117, lon: -1.677, level: "bac+3", subject: "cyber" },
+  { name: "EPITA Dév Paris", lat: 48.812, lon: 2.364, level: "bac+5", subject: "dev" },
+  { name: "École Cyber Toulouse", lat: 43.6, lon: 1.44, level: "bac+5", subject: "cyber" }
+];
+
+const map = L.map("map").setView([46.6, 2.5], 6);
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
+
+// Cluster
+const markersCluster = L.markerClusterGroup();
+map.addLayer(markersCluster);
+
+function addMarkers() {
+  markersCluster.clearLayers();
+
+  const levelFilter = document.getElementById("mapLevelFilter").value;
+  const subjectFilter = document.getElementById("mapSubjectFilter").value;
+
+  schools
+    .filter(s => levelFilter === "all" || s.level === levelFilter)
+    .filter(s => subjectFilter === "all" || s.subject === subjectFilter)
+    .forEach(s => {
+      const marker = L.marker([s.lat, s.lon]);
+      marker.bindPopup(`<b>${s.name}</b><br>${badgeLevel(s.level)}<br>${badgeSubject(s.subject)}`);
+      markersCluster.addLayer(marker);
+    });
 }
 
-/* EVENTS TABLEAU */
-levelFilter.addEventListener("change", renderFormations);
-subjectFilter.addEventListener("change", renderFormations);
-searchInput.addEventListener("input", renderFormations);
-exportBtn.addEventListener("click", exportToCsv);
+// Événements filtres carte
+document.getElementById("mapLevelFilter").addEventListener("change", addMarkers);
+document.getElementById("mapSubjectFilter").addEventListener("change", addMarkers);
 
-renderFormations();
-
+// IMPORTANT : Charger les marqueurs au démarrage
+addMarkers();
 /***************************
  *   QUIZ
  ***************************/
@@ -417,4 +492,3 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 
 });
-
