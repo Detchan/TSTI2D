@@ -93,15 +93,14 @@ addMarkers();
 📍 LIEN TABLEAU ↔ CARTE
 -------------------------------------------------- */
 function updateMapByFilters() {
-  const level = document.getElementById("mapLevelFilter").value;
-  const subject = document.getElementById("mapSubjectFilter").value;
+  const level = document.getElementById("levelFilter").value;
+  const subject = document.getElementById("subjectFilter").value;
   addMarkers(subject, "", level);
 }
 
 /* évènements filtres carte */
-document.getElementById("mapLevelFilter").addEventListener("change", updateMapByFilters);
-document.getElementById("mapSubjectFilter").addEventListener("change", updateMapByFilters);
-
+document.getElementById("levelFilter").addEventListener("change", updateMapByFilters);
+document.getElementById("subjectFilter").addEventListener("change", updateMapByFilters);
 
 /* --------------------------------------------------
 📘 TABLEAU FORMATIONS
@@ -422,4 +421,3 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 
 });
-
