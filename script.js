@@ -422,3 +422,4 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 
 });
+
