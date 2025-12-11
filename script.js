@@ -64,14 +64,14 @@ function getIcon(type) {
 /* --------------------------------------------------
 🔍 AJOUT DES MARQUEURS AVEC DOUBLE FILTRE
 -------------------------------------------------- */
-function addMarkers(typeFilter = "all", search = "", levelFilter = "all") {
+function addMarkers(subject = "all", search = "", level = "all") {
   clusterGroup.clearLayers();
 
   const query = search.trim().toLowerCase();
 
   places.forEach(p => {
-    if (typeFilter !== "all" && p.type !== typeFilter) return;
-    if (levelFilter !== "all" && p.level !== levelFilter) return;
+    if (subject !== "all" && p.type !== subject) return;
+    if (level !== "all" && p.level !== level) return;
     if (query && !p.name.toLowerCase().includes(query)) return;
 
     const marker = L.marker([p.lat, p.lon], { icon: getIcon(p.type) });
@@ -87,20 +87,20 @@ function addMarkers(typeFilter = "all", search = "", levelFilter = "all") {
   });
 }
 
-addMarkers();
-
 /* --------------------------------------------------
 📍 LIEN TABLEAU ↔ CARTE
 -------------------------------------------------- */
 function updateMapByFilters() {
-  const level = document.getElementById("levelFilter").value;
-  const subject = document.getElementById("subjectFilter").value;
-  addMarkers(subject, "", level);
+  const level = document.getElementById("mapLevelFilter").value;
+  const subject = document.getElementById("mapSubjectFilter").value;
+  const search = document.getElementById("formationSearch").value; // si tu veux synchroniser la recherche aussi
+
+  addMarkers(subject, search, level);
 }
 
 /* évènements filtres carte */
-document.getElementById("levelFilter").addEventListener("change", updateMapByFilters);
-document.getElementById("subjectFilter").addEventListener("change", updateMapByFilters);
+document.getElementById("mapLevelFilter").addEventListener("change", updateMapByFilters);
+document.getElementById("mapSubjectFilter").addEventListener("change", updateMapByFilters);
 
 /* --------------------------------------------------
 📘 TABLEAU FORMATIONS
@@ -421,3 +421,4 @@ installBtn.addEventListener("click", async () => {
   installBtn.classList.add("hidden");
 
 });
+
