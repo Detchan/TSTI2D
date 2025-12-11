@@ -21,38 +21,44 @@
   <!-- Styles -->
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <header>
     <div class="container">
       <h1>Développeur Web & Cybersécurité</h1>
-      <nav>
-        <nav class="navbar">
-  <button class="nav-toggle" id="navToggle">☰</button>
 
-  <ul class="nav-links" id="navMenu">
-    <li><a href="#intro">Intro</a></li>
-    <li><a href="#formations">Formations</a></li>
-    <li><a href="#carte">Carte</a></li>
-    <li><a href="#quiz">Quiz</a></li>
-    <li><a href="#jeu">Mini-jeu</a></li>
-  </ul>
-</nav>
+      <nav class="navbar">
+        <button class="nav-toggle" id="navToggle">☰</button>
+
+        <ul class="nav-links" id="navMenu">
+          <li><a href="#intro">Intro</a></li>
+          <li><a href="#formations">Formations</a></li>
+          <li><a href="#carte">Carte</a></li>
+          <li><a href="#quiz">Quiz</a></li>
+          <li><a href="#jeu">Mini-jeu</a></li>
+        </ul>
+      </nav>
+
       <button class="install hidden">Installer l'application</button>
     </div>
   </header>
 
-  <!-- Sections placeholder -->
   <main class="container">
+
+    <!-- Intro -->
     <section id="intro" class="card">
       <h2>Objectif</h2>
       <p>Présenter le travail de développeur web et de cyber-sécurité.</p>
     </section>
 
-   <section id="formations" class="card">
+    <!-- Formations -->
+<section id="formations" class="card">
   <h2>Formations (post-bac)</h2>
 
   <div class="table-controls">
-    <label>Filtrer : 
+
+    <!-- Filtre par niveau -->
+    <label>Niveau :
       <select id="levelFilter">
         <option value="all">Tous</option>
         <option value="bac+2">Bac+2</option>
@@ -61,7 +67,17 @@
       </select>
     </label>
 
-    <label>Rechercher : 
+    <!-- FILTRE PAR MATIÈRE (NOUVEAU) -->
+    <label>Matière :
+      <select id="subjectFilter">
+        <option value="all">Toutes</option>
+        <option value="dev">Développement</option>
+        <option value="cyber">Cybersécurité</option>
+      </select>
+    </label>
+
+    <!-- Recherche -->
+    <label>Rechercher :
       <input id="formationSearch" placeholder="Ex : BTS, Licence, EPITA..." />
     </label>
 
@@ -75,7 +91,8 @@
           <th>Niveau</th>
           <th>Intitulé</th>
           <th>Durée indicative</th>
-          <th>Remarques / Exemples d'établissements</th>
+          <th>Matière</th>
+          <th>Remarques / Exemples</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -83,18 +100,44 @@
   </div>
 </section>
 
+    <!-- Carte -->
     <section id="carte" class="card">
       <h2>Carte interactive — Établissements en France</h2>
+
+      <!-- filtres carte -->
+      <div class="table-controls">
+        
+        <label>Niveau :
+          <select id="mapLevelFilter">
+            <option value="all">Tous</option>
+            <option value="bac+2">Bac+2</option>
+            <option value="bac+3">Bac+3</option>
+            <option value="bac+5">Bac+5</option>
+          </select>
+        </label>
+
+        <label>Matière :
+          <select id="mapSubjectFilter">
+            <option value="all">Toutes</option>
+            <option value="dev">Développement</option>
+            <option value="cyber">Cybersécurité</option>
+          </select>
+        </label>
+
+      </div>
+
       <div class="map-wrap">
         <div id="map"></div>
       </div>
     </section>
 
+    <!-- Quiz -->
     <section id="quiz" class="card">
       <h2>Quiz</h2>
       <div id="quiz-container"></div>
     </section>
 
+    <!-- Mini-jeu -->
     <section id="jeu" class="card">
       <h2>Mini-jeu — Classe-les !</h2>
       <div class="game-area">
@@ -102,6 +145,7 @@
         <div class="targets"></div>
       </div>
     </section>
+
   </main>
 
   <!-- Script -->
