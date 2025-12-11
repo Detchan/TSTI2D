@@ -104,6 +104,20 @@ document.getElementById("mapSubjectFilter").addEventListener("change", updateMap
 
 const formations = [
   {
+    level: "bac+2",
+    title: "BTS SIO (SLAM / SISR)",
+    duration: "2 ans",
+    subject: "dev",
+    note: "Bon choix pour débuter"
+  },
+  {
+    level: "bac+2",
+    title: "DUT Informatique (ex-IUT)",
+    duration: "2 ans",
+    subject: "dev",
+    note: "Formation polyvalente"
+  },
+  {
     level: "bac+3",
     title: "BUT Informatique",
     duration: "3 ans",
@@ -147,348 +161,303 @@ const formations = [
   }
 ];
 
-/* ===========================
-   Badges
-=========================== */
+/* ================================
+      AFFICHAGE TABLEAU FORMATIONS
+================================ */
 
-function badgeLevel(level) {
-  return `<span class="badge ${level.replace("+","")}">${level.toUpperCase()}</span>`;
-}
-
-function badgeSubject(sub) {
-  return `<span class="badge ${sub}">${
-    sub === "dev" ? "Développement" : "Cybersécurité"
-  }</span>`;
-}
-
-/* ===========================
-   Tableau Formations
-=========================== */
-
-function loadTable() {
+function renderTable() {
   const tbody = document.querySelector("#formationsTable tbody");
+  const level = document.getElementById("levelFilter").value;
+  const subject = document.getElementById("subjectFilter").value;
+  const search = document.getElementById("formationSearch").value.trim().toLowerCase();
+
   tbody.innerHTML = "";
 
-  const levelFilter = document.getElementById("levelFilter").value;
-  const subjectFilter = document.getElementById("subjectFilter").value;
-  const search = document.getElementById("formationSearch").value.toLowerCase();
-
   formations
-    .filter(f => levelFilter === "all" || f.level === levelFilter)
-    .filter(f => subjectFilter === "all" || f.subject === subjectFilter)
-    .filter(f => f.title.toLowerCase().includes(search))
-    .forEach(row => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${badgeLevel(row.level)}</td>
-          <td>${row.title}</td>
-          <td>${row.duration}</td>
-          <td>${badgeSubject(row.subject)}</td>
-          <td>${row.note}</td>
-        </tr>
+    .filter(f =>
+      (level === "all" || f.level === level) &&
+      (subject === "all" || f.subject === subject) &&
+      (f.title.toLowerCase().includes(search))
+    )
+    .forEach(f => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><span class="badge">${f.level.toUpperCase()}</span></td>
+        <td>${f.title}</td>
+        <td>${f.duration}</td>
+        <td>${f.subject === "dev" ? "Développement" : "Cybersécurité"}</td>
+        <td>${f.note}</td>
       `;
+      tbody.appendChild(tr);
     });
 }
 
-// Événements
-document.getElementById("levelFilter").addEventListener("change", loadTable);
-document.getElementById("subjectFilter").addEventListener("change", loadTable);
-document.getElementById("formationSearch").addEventListener("input", loadTable);
+/* événements tableau */
+document.getElementById("levelFilter").addEventListener("change", renderTable);
+document.getElementById("subjectFilter").addEventListener("change", renderTable);
+document.getElementById("formationSearch").addEventListener("input", renderTable);
 
-// Charger au démarrage
-loadTable();
+renderTable();
 
-/* ===========================
-   Export CSV
-=========================== */
+/* ================================
+   DONNÉES DES ÉTABLISSEMENTS (CARTE)
+================================ */
 
-document.getElementById("exportCsv").addEventListener("click", () => {
-  let csv = "Niveau;Intitulé;Durée;Matière;Remarques\n";
-
-  document
-    .querySelectorAll("#formationsTable tbody tr")
-    .forEach(row => {
-      const cols = [...row.querySelectorAll("td")].map(td => td.innerText.replace(/\n/g, " "));
-      csv += cols.join(";") + "\n";
-    });
-
-  const blob = new Blob([csv], { type: "text/csv" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "formations.csv";
-  link.click();
-});
-
-/* ===========================
-   Carte Leaflet + Markers
-=========================== */
-
-const schools = [
-  { name: "IUT Informatique Paris", lat: 48.846, lon: 2.355, level: "bac+3", subject: "dev" },
-  { name: "Université Cyber Rennes", lat: 48.117, lon: -1.677, level: "bac+3", subject: "cyber" },
-  { name: "EPITA Dév Paris", lat: 48.812, lon: 2.364, level: "bac+5", subject: "dev" },
-  { name: "École Cyber Toulouse", lat: 43.6, lon: 1.44, level: "bac+5", subject: "cyber" }
+const places = [
+  {
+    name: "IUT Informatique",
+    lat: 48.8566,
+    lon: 2.3522,
+    type: "dev",
+    level: "bac+3",
+    url: "https://iut.fr"
+  },
+  {
+    name: "École Cybersécurité Paris",
+    lat: 48.85,
+    lon: 2.29,
+    type: "cyber",
+    level: "bac+5",
+    url: "https://cyber.com"
+  },
+  {
+    name: "Campus Dév Web Lyon",
+    lat: 45.75,
+    lon: 4.85,
+    type: "dev",
+    level: "bac+2",
+    url: "https://devlyon.com"
+  },
+  {
+    name: "Institut Cyber Toulouse",
+    lat: 43.60,
+    lon: 1.44,
+    type: "cyber",
+    level: "bac+3",
+    url: "https://cybertlse.com"
+  }
 ];
 
-const map = L.map("map").setView([46.6, 2.5], 6);
+/* ================================
+          INITIALISATION CARTE
+================================ */
 
-L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+const map = L.map("map").setView([46.6, 1.88], 6);
+
+// fond de carte
+L.tileLayer("https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png", {
   attribution: "© OpenStreetMap"
 }).addTo(map);
 
-// Cluster
-const markersCluster = L.markerClusterGroup();
-map.addLayer(markersCluster);
+// cluster
+const clusterGroup = L.markerClusterGroup();
+map.addLayer(clusterGroup);
 
-function addMarkers() {
-  markersCluster.clearLayers();
+/* ================================
+        ICONES PERSONNALISÉES
+================================ */
 
-  const levelFilter = document.getElementById("mapLevelFilter").value;
-  const subjectFilter = document.getElementById("mapSubjectFilter").value;
-
-  schools
-    .filter(s => levelFilter === "all" || s.level === levelFilter)
-    .filter(s => subjectFilter === "all" || s.subject === subjectFilter)
-    .forEach(s => {
-      const marker = L.marker([s.lat, s.lon]);
-      marker.bindPopup(`<b>${s.name}</b><br>${badgeLevel(s.level)}<br>${badgeSubject(s.subject)}`);
-      markersCluster.addLayer(marker);
-    });
+function getIcon(type) {
+  const color = type === "dev" ? "blue" : "red";
+  return L.icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-${color}.png`,
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+  });
 }
 
-// Événements filtres carte
-document.getElementById("mapLevelFilter").addEventListener("change", addMarkers);
-document.getElementById("mapSubjectFilter").addEventListener("change", addMarkers);
+/* ================================
+     AJOUT DES MARKERS FILTRÉS
+================================ */
 
-// IMPORTANT : Charger les marqueurs au démarrage
+function addMarkers(typeFilter = "all", search = "", levelFilter = "all") {
+  clusterGroup.clearLayers();
+  const query = search.trim().toLowerCase();
+
+  places.forEach(p => {
+    if (typeFilter !== "all" && p.type !== typeFilter) return;
+    if (levelFilter !== "all" && p.level !== levelFilter) return;
+    if (query && !p.name.toLowerCase().includes(query)) return;
+
+    const marker = L.marker([p.lat, p.lon], { icon: getIcon(p.type) });
+
+    marker.bindPopup(`
+      <strong>${p.name}</strong><br>
+      Matière : ${p.type === "dev" ? "Développement" : "Cybersécurité"}<br>
+      Niveau : ${p.level.toUpperCase()}<br>
+      <a href="${p.url}" target="_blank">Voir le site</a>
+    `);
+
+    clusterGroup.addLayer(marker);
+  });
+}
+
+/* ================================
+        MISE À JOUR DE LA CARTE
+================================ */
+
+function updateMap() {
+  const level = document.getElementById("mapLevelFilter").value;
+  const subject = document.getElementById("mapSubjectFilter").value;
+
+  addMarkers(subject, "", level);
+}
+
+document.getElementById("mapLevelFilter").addEventListener("change", updateMap);
+document.getElementById("mapSubjectFilter").addEventListener("change", updateMap);
+
 addMarkers();
-/***************************
- *   QUIZ
- ***************************/
+
+/* ============================================
+                🎯 QUIZ
+============================================ */
+
 const quizData = [
   {
-    question: "Que signifie HTML ?",
-    choices: [
-      "HyperText Markup Language",
-      "Hyper Transfer Mail Link",
-      "Home Tool Modern Language"
-    ],
-    answer: 0
+    q: "Quel langage est principalement utilisé pour créer des pages web ?",
+    a: ["Python", "HTML", "C++"],
+    correct: 1
   },
   {
-    question: "Quel est le rôle du CSS ?",
-    choices: [
-      "Gérer l'apparence visuelle d'un site",
-      "Gérer une base de données",
-      "Protéger le réseau"
-    ],
-    answer: 0
+    q: "Quel domaine s’occupe de la protection des systèmes informatiques ?",
+    a: ["Cybersécurité", "Graphisme", "Marketing"],
+    correct: 0
   },
   {
-    question: "Quel métier identifie et exploite des failles de sécurité pour les corriger ?",
-    choices: [
-      "Data Scientist",
-      "Pentester",
-      "Chef de projet"
-    ],
-    answer: 1
-  },
-  {
-    question: "Quel langage est principalement utilisé côté client (front-end) ?",
-    choices: [
-      "Python",
-      "JavaScript",
-      "SQL"
-    ],
-    answer: 1
-  },
-  {
-    question: "Quel est l'objectif d'un pare-feu (firewall) ?",
-    choices: [
-      "Accélérer Internet",
-      "Bloquer ou autoriser le trafic réseau",
-      "Créer un site web"
-    ],
-    answer: 1
+    q: "Quel outil permet d'afficher des cartes interactives ?",
+    a: ["Photoshop", "Leaflet", "Excel"],
+    correct: 1
   }
 ];
 
-function startQuiz() {
+function loadQuiz() {
   const container = document.getElementById("quiz-container");
-  let index = 0;
-  let score = 0;
+  container.innerHTML = "";
 
-  function showQuestion() {
-    const q = quizData[index];
+  quizData.forEach((item, index) => {
+    const div = document.createElement("div");
+    div.className = "quiz-question";
 
-    container.innerHTML = `
-      <h3>${q.question}</h3>
-      <div class="quiz-choices">
-        ${q.choices
-          .map(
-            (c, i) =>
-              `<button class="quiz-choice" data-id="${i}">${c}</button>`
-          )
-          .join("")}
-      </div>
-      <p class="quiz-feedback"></p>
-    `;
-
-    document.querySelectorAll(".quiz-choice").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const fb = document.querySelector(".quiz-feedback");
-
-        if (Number(btn.dataset.id) === q.answer) {
-          fb.textContent = "✔️ Bonne réponse !";
-          fb.style.color = "green";
-          score++;
-        } else {
-          fb.textContent = "❌ Mauvaise réponse...";
-          fb.style.color = "red";
-        }
-
-        setTimeout(() => {
-          index++;
-          if (index < quizData.length) showQuestion();
-          else showResult();
-        }, 700);
-      });
+    let answersHTML = "";
+    item.a.forEach((ans, i) => {
+      answersHTML += `
+        <label>
+          <input type="radio" name="q${index}" value="${i}"> ${ans}
+        </label><br>
+      `;
     });
-  }
 
-  function showResult() {
-    let message = "";
-
-    if (score === 5) message = "🔥 Parfait, tu es un expert !";
-    else if (score >= 3) message = "👏 Bien joué, bonnes connaissances !";
-    else message = "💡 Continue à apprendre, tu vas y arriver !";
-
-    container.innerHTML = `
-      <h3>🎉 Quiz terminé !</h3>
-      <p>Score : <strong>${score} / ${quizData.length}</strong></p>
-      <p>${message}</p>
-      <button id="retry">Rejouer</button>
+    div.innerHTML = `
+      <p><strong>${item.q}</strong></p>
+      ${answersHTML}
     `;
 
-    document.getElementById("retry").onclick = () => startQuiz();
-  }
-
-  showQuestion();
-}
-
-startQuiz();
-
-/***************************
- *   MINI-JEU : "CLASSE-LES !"
- ***************************/
-const items = [
-  { text: "HTML", category: "Développement" },
-  { text: "Firewall", category: "Cybersécurité" },
-  { text: "JavaScript", category: "Développement" },
-  { text: "Phishing", category: "Cybersécurité" }
-];
-
-const categories = ["Développement", "Cybersécurité"];
-
-function initGame() {
-  const dragBox = document.querySelector(".draggables");
-  const targetBox = document.querySelector(".targets");
-
-  dragBox.innerHTML = "";
-  targetBox.innerHTML = "";
-
-  let correct = 0;
-
-  /*************
-   * Zones cibles
-   *************/
-  categories.forEach(cat => {
-    const zone = document.createElement("div");
-    zone.className = "dropzone";
-    zone.dataset.cat = cat;
-    zone.innerHTML = `<h4>${cat}</h4>`;
-    targetBox.appendChild(zone);
+    container.appendChild(div);
   });
 
-  /*************
-   * Éléments à trier
-   *************/
-  items.forEach((item, index) => {
+  const btn = document.createElement("button");
+  btn.textContent = "Valider";
+  btn.onclick = checkQuiz;
+  container.appendChild(btn);
+
+  const result = document.createElement("p");
+  result.id = "quiz-result";
+  container.appendChild(result);
+}
+
+function checkQuiz() {
+  let score = 0;
+
+  quizData.forEach((q, index) => {
+    const resp = document.querySelector(`input[name="q${index}"]:checked`);
+    if (resp && Number(resp.value) === q.correct) score++;
+  });
+
+  document.getElementById("quiz-result").textContent =
+    `Score : ${score} / ${quizData.length}`;
+}
+
+loadQuiz();
+
+/* ============================================
+              🎮 MINI-JEU DRAG & DROP
+============================================ */
+
+const gameItems = [
+  { name: "HTML", cat: "dev" },
+  { name: "Pentest", cat: "cyber" },
+  { name: "CSS", cat: "dev" },
+  { name: "Firewall", cat: "cyber" }
+];
+
+function loadGame() {
+  const drag = document.querySelector(".draggables");
+  const targets = document.querySelector(".targets");
+
+  drag.innerHTML = "";
+  targets.innerHTML = `
+    <div class="target" data-cat="dev">Développement</div>
+    <div class="target" data-cat="cyber">Cybersécurité</div>
+  `;
+
+  gameItems.forEach(item => {
     const div = document.createElement("div");
     div.className = "draggable";
     div.draggable = true;
-    div.textContent = item.text;
-
-    // ➤ Identifiant permanent pour éviter les bugs
-    div.dataset.id = index;
-    div.dataset.cat = item.category;
-
-    dragBox.appendChild(div);
-
-    div.addEventListener("dragstart", e => {
-      e.dataTransfer.setData("text/plain", div.dataset.id);
-      div.classList.add("dragging");
-    });
-
-    div.addEventListener("dragend", () => div.classList.remove("dragging"));
+    div.textContent = item.name;
+    div.dataset.cat = item.cat;
+    drag.appendChild(div);
   });
 
-  /*************
-   * Gestion du drop
-   *************/
-  document.querySelectorAll(".dropzone").forEach(zone => {
-    zone.addEventListener("dragover", e => e.preventDefault());
+  // drag events
+  document.querySelectorAll(".draggable").forEach(el => {
+    el.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text", e.target.dataset.cat + "|" + e.target.textContent);
+    });
+  });
 
-    zone.addEventListener("drop", e => {
-      e.preventDefault();
+  document.querySelectorAll(".target").forEach(t => {
+    t.addEventListener("dragover", e => e.preventDefault());
 
-      const id = e.dataTransfer.getData("text/plain");
-      const item = items[id];
+    t.addEventListener("drop", e => {
+      const [cat, name] = e.dataTransfer.getData("text").split("|");
 
-      // On récupère le bon élément grâce à data-id (fix du bug)
-      const dragged = document.querySelector(`.draggable[data-id='${id}']`);
-
-      if (item.category === zone.dataset.cat) {
-
-        // Ajouter dans la bonne zone
-        zone.appendChild(dragged);
-        correct++;
-
-        zone.classList.add("success");
-        setTimeout(() => zone.classList.remove("success"), 300);
-
-        // Victoire UNE SEULE FOIS quand tout est correct
-        if (correct === items.length) {
-          setTimeout(() => {
-            alert("🎉 Bravo ! Tu as tout bien classé !");
-            initGame();
-          }, 400);
-        }
-
+      if (cat === t.dataset.cat) {
+        t.innerHTML += `<div class="success">${name}</div>`;
       } else {
-        zone.classList.add("error");
-        setTimeout(() => zone.classList.remove("error"), 300);
+        t.innerHTML += `<div class="error">${name}</div>`;
       }
     });
   });
 }
 
-initGame();
+loadGame();
 
-/* --------------------------------------------------
-📱 PWA INSTALL
--------------------------------------------------- */
+/* ============================================
+              📱 INSTALLATION PWA
+============================================ */
+
 let deferredPrompt;
 const installBtn = document.querySelector(".install");
 
-window.addEventListener("beforeinstallprompt", e => {
+window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   installBtn.classList.remove("hidden");
 });
 
 installBtn.addEventListener("click", async () => {
-  deferredPrompt.prompt();
   installBtn.classList.add("hidden");
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+});
 
+/* ============================================
+             📁 NAVIGATION MOBILE
+============================================ */
+
+document.getElementById("navToggle").addEventListener("click", () => {
+  document.getElementById("navMenu").classList.toggle("open");
 });
